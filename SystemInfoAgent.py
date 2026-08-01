@@ -5,7 +5,16 @@ import json
 import datetime
 from subprocess import call
 from prettytable import PrettyTable
+from fastapi import FastAPI
+from pydantic import BaseModel
+import requests
 
+def postMetrics(data):
+
+    url = "http://127.0.0.1:8000/metrics"
+    response = requests.post(url, json=data)
+
+    print(response.status_code)
 
 def systemMonitorer():
     while True:
@@ -75,5 +84,32 @@ def systemMonitorer():
         json_data = json.dumps(data, indent=2)
 
         print(json_data)
+
+        postMetrics(json_data)
+
+
+
+class Network(BaseModel):
+    bytes_sent: int
+    bytes_rcv: int
+
+class Metrics(BaseModel):
+    cpuUse: float
+    timestamp: str
+    memUse: float
+    diskUse: float
+    network: Network
+
+app = FastAPI()
+
+def restIF():
+    @app.post("/metrics")
+    async def receive_metrics(metrics: Metrics):
+
+        return {
+            "status": "ok"
+        }
+
+restIF()
 
 systemMonitorer()
