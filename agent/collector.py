@@ -1,6 +1,8 @@
 import psutil
 from datetime import datetime
 import logging
+import socket
+import platform
 
 def collect_metrics():
     cpuUsage = psutil.cpu_percent(interval=1)
@@ -16,6 +18,12 @@ def collect_metrics():
     logging.info(f"Received Network Traffic is {networkTrf.bytes_recv} and sent is {networkTrf.bytes_sent}")
 
     ts = datetime.now().isoformat()
+
+    hostname = socket.gethostname()
+    ipaddress = socket.gethostbyname(hostname)
+
+    os_name = platform.system()
+    kernel = platform.release()
     '''
     process_table = PrettyTable(['PID', 'PNAME', 'STATUS',
                                      'CPU', 'NUM THREADS', 'MEMORY(MB)'])
@@ -35,10 +43,10 @@ def collect_metrics():
         top[p] = p.cpu_percent() / psutil.cpu_count()
 
     toplist = sorted(top.items(), key=lambda x: x[1])
-    top10 = toplist[-10:]
-    top10.reverse()
+    top5 = toplist[-5:]
+    top5.reverse()
 
-    for p, cpu_percent in top10:
+    for p, cpu_percent in top5:
 
         try:
             # oneshot to improve info retrieve efficiency
@@ -58,6 +66,11 @@ def collect_metrics():
     print(process_table)
     '''
     return {
+        "hostname": hostname,
+        "ipaddress": ipaddress,
+        "os": os_name,
+        "kernel": kernel,
+
         "timestamp": ts,
         "cpuUse": cpuUsage,
         "memUse": memUsage.percent,
