@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Float, DateTime, String, Integer
+from sqlalchemy import ForeignKey, Float, DateTime, String, Integer, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from .database import Base
@@ -40,9 +40,13 @@ class Measurement(Base):
 
     disk: Mapped[float]
 
-    network_in: Mapped[int]
+    network_in: Mapped[int] = mapped_column(BigInteger)
 
-    network_out: Mapped[int]
+    network_out: Mapped[int] = mapped_column(BigInteger)
+
+    network_in_mbps: Mapped[float]
+
+    network_out_mbps: Mapped[float]
 
     agent: Mapped["Agent"] = relationship(
         back_populates="measurements"

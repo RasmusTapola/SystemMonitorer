@@ -1,7 +1,7 @@
 import time
 
-from collector import collect_metrics
-from sender import send_metrics
+from .collector import collect_metrics
+from .sender import send_metrics
 
 while True:
 

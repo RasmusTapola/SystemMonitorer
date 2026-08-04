@@ -1,6 +1,12 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+class ProcessIn(BaseModel):
+    name: str
+    pid: int
+    cpu: float
+    memory: float
+
 class MetricsIn(BaseModel):
     hostname: str
     ipaddress: str
@@ -12,6 +18,9 @@ class MetricsIn(BaseModel):
     diskUsage: float
     networkTrfIn: int
     networkTrfOut: int
+    networkInMbps: float
+    networkOutMbps: float
+    processes: list[ProcessIn]
 
 class AgentsIn(BaseModel):
     hostname: str
@@ -19,9 +28,4 @@ class AgentsIn(BaseModel):
     os: str
     kernel: str
 
-class ProcessIn(BaseModel):
-    id: int
-    name: str
-    pid: int
-    cpu: float
-    memory: float
+
