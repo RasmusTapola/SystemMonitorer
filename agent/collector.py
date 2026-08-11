@@ -64,8 +64,8 @@ def collect_metrics():
             "diskUsage": diskUsage.percent,
             "networkTrfIn": networkTrf.bytes_recv,
             "networkTrfOut": networkTrf.bytes_sent,
-            "networkInMbps": mbps_in,
-            "networkOutMbps": mbps_out,
+            "networkInMbps": round(mbps_in, 3),
+            "networkOutMbps": round(mbps_out, 3),
 
             "processes": top_procs
         }
@@ -87,6 +87,9 @@ def collect_top_processes(limit=5):
 
     for process in proc:
         try:
+            if process.pid == 0:
+                continue
+
             cpu = process.cpu_percent(None)
             memory = process.memory_info().rss / (1024 * 1024)
 
