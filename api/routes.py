@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from time import time
 
 from .crud import save_metrics
 from .database import get_db
@@ -20,24 +19,7 @@ def receive_metrics(metrics: MetricsIn, db: Session = Depends(get_db)):
     }
 
 @router.get("/health")
-def list_health(db: Session = Depends(get_db)):
-    '''agents = get_health_status(db)
-
-    for agent in agents:
-        if agent.last_seen < time:
-            agents.remove
-
-    return[
-        {
-            "id": agent.id,
-            "hostname": agent.hostname,
-            "ipaddress": agent.ipaddress,
-            "os": agent.os,
-            "kernel": agent.kernel,
-            "last_seen": agent.last_seen,
-        }
-        for agent in agents
-    ]'''
+def list_health():
 
     return{
         "status": "ok"

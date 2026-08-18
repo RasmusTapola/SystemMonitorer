@@ -37,7 +37,7 @@ def get_agent_metrics(agent_id: int, db: Session) -> list[Measurement]:
 
     
 
-def get_latest_metrics(agent_id: int, db: Session) -> list[Measurement]:
+def get_latest_metrics(agent_id: int, db: Session) -> Measurement | None:
     
     return (
         db.query(Measurement)
