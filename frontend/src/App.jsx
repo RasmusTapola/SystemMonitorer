@@ -1,122 +1,103 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect, useState } from 'react'
 import './App.css'
 
+const API_BASE_URL = "http://localhost:8000"
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [agents, setAgents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selectedAgentId, setSelectedAgentId] = useState(null);
+const [latestMetrics, setLatestMetrics] = useState(null);
+
+  useEffect(() => {
+    async function fetchAgents() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/agents`);
+
+        if (!response.ok) {
+          throw new Error(`Request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Agents from API:", data);
+        setAgents(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAgents();
+  }, []);
+
+  useEffect(() => {
+    console.log("selected agent:", selectedAgentId);
+    if (!selectedAgentId) return;
+
+    async function fetchLatestMetrics() {
+      const response = await fetch(
+        `${API_BASE_URL}/agents/${selectedAgentId}/latest`
+      );
+
+      if (!response.ok) {
+        throw new Error("request failed: ${response.status}")
+      }
+
+      const data = await response.json();
+      setLatestMetrics(data);
+    }
+
+    fetchLatestMetrics();
+  }, [selectedAgentId]);
+
+  if (loading) {
+    return <p>Loading agents...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+     <main>
+      <h1>System Monitor</h1>
 
-      <div className="ticks"></div>
+      <ul>
+        {agents.map((agent) => (
+          <li key={agent.id}>
+            {agent.hostname} - {agent.ipaddress}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
+            <button onClick={() => setSelectedAgentId(agent.id)}>
+              View metrics
+            </button>
+          </li>
+        ))}
+      </ul>
+      {latestMetrics && (
+        <section>
+          <h2>Latest Metrics</h2>
+
+          <p>CPU: {latestMetrics.cpu}%</p>
+          <p>Memory: {latestMetrics.memory}%</p>
+          <p>Disk: {latestMetrics.disk}%</p>
+          <p>Network In: {latestMetrics.network_in_mbps} Mbps</p>
+          <p>Network Out: {latestMetrics.network_out_mbps} Mbps</p>
+
+          <h3>Top Processes</h3>
+
           <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
+            {latestMetrics.processes.map((process) => (
+              <li key={process.id}>
+                {process.name} - CPU {process.cpu}% - Memory {process.memory} MB
+              </li>
+            ))}
           </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        </section>
+      )}
+    </main>
+  );
 }
 
 export default App
