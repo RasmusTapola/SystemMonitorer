@@ -1,7 +1,7 @@
 :root {
   --text: #6b6375;
   --text-h: #08060d;
-  --bg: #fff;
+  --bg: #9b9b9c;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
   --accent: #aa3bff;
@@ -48,6 +48,19 @@
   #social .button-icon {
     filter: invert(1) brightness(2);
   }
+}
+
+main {
+  background: #dddddd;
+  margin: 32px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: left;
+}
+
+select {
+  background: #dddddd;
 }
 
 body {
@@ -108,4 +121,32 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+.agent-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: capitalize;
+  font-size: 14px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.status.connected .status-dot {
+  background: #22c55e;
+}
+
+.status.disconnected .status-dot {
+  background: #ef4444;
 }

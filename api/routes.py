@@ -97,8 +97,12 @@ def list_latest_metrics(agent_id: int, db: Session = Depends(get_db)):
     }
 
 @router.get("/agents/{agent_id}/measurements")
-def list_agent_metrics(agent_id: int, db: Session = Depends(get_db)):
-    measurements = get_agent_metrics(agent_id, db)
+def list_agent_metrics(
+    agent_id: int, 
+    minutes: int = 15,
+    db: Session = Depends(get_db)):
+    
+    measurements = get_agent_metrics(agent_id, minutes, db)
 
     return [
         {

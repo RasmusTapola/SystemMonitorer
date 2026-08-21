@@ -8,7 +8,17 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState(null);
-const [latestMetrics, setLatestMetrics] = useState(null);
+  const [latestMetrics, setLatestMetrics] = useState(null);
+  const [processSort, setProcessSort] = useState("cpu");
+  const sortedProcesses = latestMetrics
+    ? [...latestMetrics.processes].sort((a, b) => b[processSort] - a[processSort])
+    : [];
+  const selectedAgent = agents.find(
+    (agent) => String(agent.id) === String(selectedAgentId)
+  );
+  const [timeframeMinutes, setTimeframeMinutes] = useState(15);
+  const [measurements, setMeasurements] = useState([]);
+  const [showMeasurements, setShowMeasurements] = useState(false);
 
   useEffect(() => {
     async function fetchAgents() {
@@ -30,10 +40,13 @@ const [latestMetrics, setLatestMetrics] = useState(null);
     }
 
     fetchAgents();
+
+    const intervalId = setInterval(fetchAgents, 5000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
-    console.log("selected agent:", selectedAgentId);
     if (!selectedAgentId) return;
 
     async function fetchLatestMetrics() {
@@ -42,7 +55,7 @@ const [latestMetrics, setLatestMetrics] = useState(null);
       );
 
       if (!response.ok) {
-        throw new Error("request failed: ${response.status}")
+        throw new Error(`Request failed: ${response.status}`);
       }
 
       const data = await response.json();
@@ -50,7 +63,37 @@ const [latestMetrics, setLatestMetrics] = useState(null);
     }
 
     fetchLatestMetrics();
+
+    const interval = setInterval(fetchLatestMetrics, 5000);
+  
+    return () => {
+      clearInterval(interval)
+    }
+  
   }, [selectedAgentId]);
+
+  useEffect(() => {
+  if (!selectedAgentId) return;
+
+  async function fetchMeasurements() {
+    const response = await fetch(
+      `${API_BASE_URL}/agents/${selectedAgentId}/measurements?minutes=${timeframeMinutes}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    setMeasurements(data);
+  }
+
+  fetchMeasurements();
+
+  const interval = setInterval(fetchMeasurements, 5000);
+
+  return () => clearInterval(interval);
+}, [selectedAgentId, timeframeMinutes]);
 
   if (loading) {
     return <p>Loading agents...</p>;
@@ -64,17 +107,69 @@ const [latestMetrics, setLatestMetrics] = useState(null);
      <main>
       <h1>System Monitor</h1>
 
-      <ul>
-        {agents.map((agent) => (
-          <li key={agent.id}>
-            {agent.hostname} - {agent.ipaddress}
+      <div className="agent-selector">
+        <label htmlFor="agent-select">Select agent</label>
 
-            <button onClick={() => setSelectedAgentId(agent.id)}>
-              View metrics
-            </button>
-          </li>
-        ))}
-      </ul>
+        <select
+          id="agent-select"
+          value={selectedAgentId ?? ""}
+          onChange={(event) => {
+            setSelectedAgentId(event.target.value);
+            setLatestMetrics(null);
+            setMeasurements([]);
+            setShowMeasurements(false);
+          }}
+        >
+          <option value="">Choose an agent...</option>
+
+          {agents.map((agent) => (
+            <option key={agent.id} value={agent.id}>
+              {agent.hostname} - {agent.ipaddress}
+            </option>
+          ))}
+        </select>
+
+        {selectedAgent && (
+          <span className={`status ${getAgentStatus(selectedAgent)}`}>
+            <span className="status-dot" />
+            {getAgentStatus(selectedAgent)}
+          </span>
+        )}
+      </div>
+
+      <label htmlFor="timeframe-select">Timeframe</label>
+
+      <select
+        id="timeframe-select"
+        value={timeframeMinutes}
+        onChange={(event) => {
+          setTimeframeMinutes(Number(event.target.value));
+          setShowMeasurements(false);
+        }}>
+       
+        <option value={5}>Last 5 minutes</option>
+        <option value={15}>Last 15 minutes</option>
+        <option value={60}>Last hour</option>
+        <option value={360}>Last 6 hours</option>
+        <option value={1440}>Last 24 hours</option>
+        
+      </select>
+
+      <p>Measurements in selected timeframe: {measurements.length}</p>
+
+      <button onClick={() => setShowMeasurements(!showMeasurements)}>
+        {showMeasurements ? "Hide measurements" : "Display measurements"}
+      </button>
+      {showMeasurements && (
+        <ul>
+          {measurements.map((measurement) => (
+            <li key={measurement.id}>
+              {measurement.timestamp}: CPU {measurement.cpu}% - Memory {measurement.memory}%
+            </li>
+          ))}
+        </ul>
+      )}
+
       {latestMetrics && (
         <section>
           <h2>Latest Metrics</h2>
@@ -87,8 +182,17 @@ const [latestMetrics, setLatestMetrics] = useState(null);
 
           <h3>Top Processes</h3>
 
+          <p>Filter by:</p>
+          <select
+            value={processSort}
+            onChange={(event) => setProcessSort(event.target.value)}
+          >
+            <option value="cpu">CPU usage</option>
+            <option value="memory">Memory usage</option>
+          </select>
+
           <ul>
-            {latestMetrics.processes.map((process) => (
+            {sortedProcesses.map((process) => (
               <li key={process.id}>
                 {process.name} - CPU {process.cpu}% - Memory {process.memory} MB
               </li>
@@ -101,3 +205,12 @@ const [latestMetrics, setLatestMetrics] = useState(null);
 }
 
 export default App
+
+function getAgentStatus(agent) {
+  const lastSeen = new Date(agent.last_seen);
+  const now = new Date();
+
+  const secondsSinceLastSeen = (now - lastSeen) / 1000;
+
+  return secondsSinceLastSeen <= 15 ? "connected" : "disconnected";
+}

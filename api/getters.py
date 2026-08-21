@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
 from .models import Agent, Measurement
 
@@ -26,11 +27,14 @@ def get_health_status(db: Session) -> list[Agent]:
         .all()
     )
 
-def get_agent_metrics(agent_id: int, db: Session) -> list[Measurement]:
+def get_agent_metrics(agent_id: int, minutes: int, db: Session) -> list[Measurement]:
+
+    since = datetime.now() - timedelta(minutes=minutes)
 
     return (
         db.query(Measurement)
         .filter(Measurement.agent_id == agent_id)
+        .filter(Measurement.timestamp >= since)
         .order_by(Measurement.timestamp.desc())
         .all()
     )
