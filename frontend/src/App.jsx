@@ -208,9 +208,9 @@ export default App
 
 function getAgentStatus(agent) {
   const lastSeen = new Date(agent.last_seen);
-  const now = new Date();
+  const secondsSinceLastSeen = (Date.now() - lastSeen.getTime()) / 1000;
 
-  const secondsSinceLastSeen = (now - lastSeen) / 1000;
-
-  return secondsSinceLastSeen <= 15 ? "connected" : "disconnected";
+  return secondsSinceLastSeen <= 15 
+    ? "connected" 
+    : "disconnected";
 }

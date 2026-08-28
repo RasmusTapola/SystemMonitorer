@@ -9,6 +9,7 @@ class ProcessIn(BaseModel):
 
 class MetricsIn(BaseModel):
     hostname: str
+    agentName: str
     ipaddress: str
     os: str
     kernel: str
@@ -23,6 +24,7 @@ class MetricsIn(BaseModel):
     processes: list[ProcessIn]
 
 class AgentsIn(BaseModel):
+    agentName: str
     hostname: str
     ipaddress: str
     os: str

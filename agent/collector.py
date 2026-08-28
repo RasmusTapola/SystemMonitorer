@@ -1,6 +1,7 @@
 import psutil
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
+import os
 import socket
 import platform
 import time
@@ -26,7 +27,7 @@ def collect_metrics():
     networkTrf = psutil.net_io_counters()
     logging.info(f"Received Network Traffic is {networkTrf.bytes_recv} and sent is {networkTrf.bytes_sent}")
 
-    ts = datetime.now().isoformat()
+    ts = datetime.now(timezone.utc).isoformat()
 
     mbps_in = 0.0
     mbps_out = 0.0
@@ -45,6 +46,7 @@ def collect_metrics():
     previous_time = time.monotonic()
 
     hostname = socket.gethostname()
+    agent_name = os.getenv("AGENT_NAME", hostname)
     ipaddress = socket.gethostbyname(hostname)
 
     os_name = platform.system()
@@ -54,6 +56,7 @@ def collect_metrics():
 
     return {
             "hostname": hostname,
+            "agentName": agent_name,
             "ipaddress": ipaddress,
             "os": os_name,
             "kernel": kernel,

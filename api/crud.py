@@ -7,12 +7,13 @@ from .schemas import MetricsIn
 def save_metrics(db: Session, metrics: MetricsIn) -> Measurement:
     agent = (
         db.query(Agent)
-        .filter(Agent.hostname == metrics.hostname)
+        .filter(Agent.agent_name == metrics.agentName)
         .first()
     )
 
     if agent is None:
         agent = Agent(
+            agent_name=metrics.agentName,
             hostname=metrics.hostname,
             ipaddress=metrics.ipaddress,
             os=metrics.os,
@@ -22,6 +23,7 @@ def save_metrics(db: Session, metrics: MetricsIn) -> Measurement:
         db.add(agent)
         db.flush()
     else:
+        agent.agent_name = metrics.agentName
         agent.ipaddress = metrics.ipaddress
         agent.os = metrics.os
         agent.kernel = metrics.kernel

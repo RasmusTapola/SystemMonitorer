@@ -39,6 +39,7 @@ def list_agents(db: Session = Depends(get_db)):
     return[
         {
             "id": agent.id,
+            "agent_name": agent.agent_name,
             "hostname": agent.hostname,
             "ipaddress": agent.ipaddress,
             "os": agent.os,
@@ -56,6 +57,7 @@ def list_agent_by_id(agent_id: int, db: Session = Depends(get_db)):
 
     return {
         "id": agent.id,
+        "agent_name": agent.agent_name,
         "hostname": agent.hostname,
         "ipaddress": agent.ipaddress,
         "os": agent.os,

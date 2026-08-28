@@ -8,12 +8,12 @@ api = subprocess.Popen([
     "api.main:app", 
     "--reload"
 ])
-
+'''
 agent = subprocess.Popen([
     sys.executable, 
     "-m",
     "agent.main"
 ])
-
+'''
 api.wait()
-agent.wait()
+#agent.wait()

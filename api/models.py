@@ -8,7 +8,9 @@ class Agent(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    last_seen: Mapped[datetime]
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    agent_name: Mapped[str] = mapped_column(String(100))
 
     hostname: Mapped[str] = mapped_column(String(100))
 
@@ -32,7 +34,7 @@ class Measurement(Base):
         ForeignKey("agents.id")
     )
 
-    timestamp: Mapped[datetime]
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     cpu: Mapped[float]
 

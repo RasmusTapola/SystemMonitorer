@@ -1,6 +1,8 @@
+import os
 import requests
 
-url = "http://127.0.0.1:8000/metrics"
+url = os.getenv("API_URL", "http://127.0.0.1:8000/metrics")
+
 
 def send_metrics(data):
 
