@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: monitor-agent
+  namespace: system-monitor
+spec:
+  serviceName: monitor-agent
+  replicas: 3
+  selector:
+    matchLabels:
+      app: monitor-agent
+  template:
+    metadata:
+      labels:
+        app: monitor-agent
+    spec:
+      containers:
+        - name: agent
+          image: systemmonitor-agent:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: API_URL
+              value: http://monitor-api:8000/metrics
+            - name: AGENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
